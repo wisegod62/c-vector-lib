@@ -1,166 +1,308 @@
 #include "vector.h"
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
-void test_initialization_and_append() {
-  printf("-> Running: Initialization and Append Test\n");
+struct Person {
+  char name[32];
+  int age;
+};
 
-  // Initialize with a tiny capacity to force quick growth cycles
-  Vector *v = vec_init(2);
+void test_int_vector(void) {
+  printf("-> Running: Generic int vector test\n");
+
+  Vector *v = vec_init(2, sizeof(int));
+
   assert(v != NULL);
   assert(vec_size(v) == 0);
   assert(vec_capacity(v) == 2);
   assert(vec_is_empty(v) == 1);
 
-  // Append items and watch structural metrics adapt
-  assert(vec_append(v, 10) == 0);
-  assert(vec_append(v, 20) == 0);
-  assert(vec_size(v) == 2);
-  assert(vec_capacity(v) == 2); // Perfectly full
+  int value = 10;
+  assert(vec_append(v, &value) == 0);
 
-  // Trigger explicit geometric expansion (capacity doubles from 2 to 4)
-  assert(vec_append(v, 30) == 0);
+  value = 20;
+  assert(vec_append(v, &value) == 0);
+
+  value = 30;
+  assert(vec_append(v, &value) == 0);
+
   assert(vec_size(v) == 3);
   assert(vec_capacity(v) == 4);
   assert(vec_is_empty(v) == 0);
 
-  // Verify values match internal sequence layout
-  int val = 0;
-  assert(vec_get(v, 0, &val) == 0);
-  assert(val == 10);
-  assert(vec_get(v, 1, &val) == 0);
-  assert(val == 20);
-  assert(vec_get(v, 2, &val) == 0);
-  assert(val == 30);
+  int out = 0;
+
+  assert(vec_get(v, 0, &out) == 0);
+  assert(out == 10);
+
+  assert(vec_get(v, 1, &out) == 0);
+  assert(out == 20);
+
+  assert(vec_get(v, 2, &out) == 0);
+  assert(out == 30);
 
   vec_free(v);
 }
 
-void test_bounds_and_safety() {
-  printf("-> Running: Safety and Bounds Checking Test\n");
-  Vector *v = vec_init(4);
-  vec_append(v, 100);
-  vec_append(v, 200);
+void test_double_vector(void) {
+  printf("-> Running: Generic double vector test\n");
 
-  int val = 0;
-  // Verify positive out-of-bounds protection
-  assert(vec_get(v, 2, &val) == -1);
-  assert(vec_set(v, 500, 5) == -1);
+  Vector *v = vec_init(2, sizeof(double));
 
-  // Verify negative index vulnerability defense via explicit unsigned
-  // wrap-around simulation
-  assert(vec_get(v, (size_t)-1, &val) == -1);
-  assert(vec_set(v, 500, (size_t)-3) == -1);
+  assert(v != NULL);
+
+  double value = 3.14;
+  assert(vec_append(v, &value) == 0);
+
+  value = 6.28;
+  assert(vec_append(v, &value) == 0);
+
+  double out = 0.0;
+
+  assert(vec_get(v, 0, &out) == 0);
+  assert(out == 3.14);
+
+  assert(vec_get(v, 1, &out) == 0);
+  assert(out == 6.28);
+
+  assert(vec_size(v) == 2);
+
+  vec_free(v);
+}
+
+void test_struct_vector(void) {
+  printf("-> Running: Generic struct vector test\n");
+
+  Vector *v = vec_init(2, sizeof(struct Person));
+
+  assert(v != NULL);
+
+  struct Person alice = {"Alice", 25};
+  struct Person bob = {"Bob", 31};
+
+  assert(vec_append(v, &alice) == 0);
+  assert(vec_append(v, &bob) == 0);
+
+  struct Person out;
+
+  assert(vec_get(v, 0, &out) == 0);
+  assert(strcmp(out.name, "Alice") == 0);
+  assert(out.age == 25);
+
+  assert(vec_get(v, 1, &out) == 0);
+  assert(strcmp(out.name, "Bob") == 0);
+  assert(out.age == 31);
+
+  vec_free(v);
+}
+
+void test_bounds(void) {
+  printf("-> Running: Bounds checking test\n");
+
+  Vector *v = vec_init(4, sizeof(int));
+
+  int value = 100;
+  assert(vec_append(v, &value) == 0);
+
+  value = 200;
+  assert(vec_append(v, &value) == 0);
+
+  int out = 0;
+
+  assert(vec_get(v, 2, &out) == -1);
+  assert(vec_get(v, (size_t)-1, &out) == -1);
+
+  value = 500;
+  assert(vec_set(v, 2, &value) == -1);
+  assert(vec_set(v, (size_t)-1, &value) == -1);
+
+  assert(vec_remove(v, 2) == -1);
   assert(vec_remove(v, (size_t)-1) == -1);
 
-  // Verify clean front/back lookup guards
-  assert(vec_front(v, &val) == 0);
-  assert(val == 100);
-  assert(vec_back(v, &val) == 0);
-  assert(val == 200);
-
   vec_free(v);
 
-  // Ensure empty vector guards work correctly
-  Vector *empty_v = vec_init(4);
-  assert(vec_front(empty_v, &val) == -1);
-  assert(vec_back(empty_v, &val) == -1);
-  assert(vec_pop(empty_v, &val) == -1);
-  vec_free(empty_v);
+  Vector *empty = vec_init(4, sizeof(int));
+
+  assert(vec_front(empty, &out) == -1);
+  assert(vec_back(empty, &out) == -1);
+  assert(vec_pop(empty, &out) == -1);
+
+  vec_free(empty);
 }
 
-void test_insert_and_shift() {
-  printf("-> Running: Insertion and Memory Shifting Test\n");
-  Vector *v = vec_init(4);
-  vec_append(v, 10);
-  vec_append(v, 30);
+void test_front_back(void) {
+  printf("-> Running: Front and back test\n");
 
-  // Insert 20 directly between 10 and 30 (index 1)
-  assert(vec_insert(v, 20, 1) == 0);
+  Vector *v = vec_init(4, sizeof(int));
+
+  int value = 10;
+  vec_append(v, &value);
+
+  value = 20;
+  vec_append(v, &value);
+
+  value = 30;
+  vec_append(v, &value);
+
+  int out = 0;
+
+  assert(vec_front(v, &out) == 0);
+  assert(out == 10);
+
+  assert(vec_back(v, &out) == 0);
+  assert(out == 30);
+
+  vec_free(v);
+}
+
+void test_insert(void) {
+  printf("-> Running: Insert and shifting test\n");
+
+  Vector *v = vec_init(4, sizeof(int));
+
+  int value = 10;
+  vec_append(v, &value);
+
+  value = 30;
+  vec_append(v, &value);
+
+  value = 20;
+  assert(vec_insert(v, 1, &value) == 0);
+
   assert(vec_size(v) == 3);
 
-  int val = 0;
-  vec_get(v, 0, &val);
-  assert(val == 10);
-  vec_get(v, 1, &val);
-  assert(val == 20); // Verification of right-shift data allocation
-  vec_get(v, 2, &val);
-  assert(val == 30);
+  int out;
+
+  vec_get(v, 0, &out);
+  assert(out == 10);
+
+  vec_get(v, 1, &out);
+  assert(out == 20);
+
+  vec_get(v, 2, &out);
+  assert(out == 30);
 
   vec_free(v);
 }
 
-void test_remove_and_pop() {
-  printf("-> Running: Remove and Pop Performance Test\n");
-  Vector *v = vec_init(4);
-  vec_append(v, 10);
-  vec_append(v, 20);
-  vec_append(v, 30);
+void test_remove_and_pop(void) {
+  printf("-> Running: Remove and pop test\n");
 
-  int val = 0;
-  // Test constant time pop optimization
-  assert(vec_pop(v, &val) == 0);
-  assert(val == 30);
+  Vector *v = vec_init(4, sizeof(int));
+
+  int value = 10;
+  vec_append(v, &value);
+
+  value = 20;
+  vec_append(v, &value);
+
+  value = 30;
+  vec_append(v, &value);
+
+  int out;
+
+  assert(vec_pop(v, &out) == 0);
+  assert(out == 30);
   assert(vec_size(v) == 2);
 
-  // Test shifting remove logic
-  vec_append(v, 40);             // Layout: [10, 20, 40]
-  assert(vec_remove(v, 1) == 0); // Erase index 1 (20)
+  value = 40;
+  vec_append(v, &value);
+
+  assert(vec_remove(v, 1) == 0);
   assert(vec_size(v) == 2);
 
-  vec_get(v, 0, &val);
-  assert(val == 10);
-  vec_get(v, 1, &val);
-  assert(val == 40); // 40 successfully shifted left
+  vec_get(v, 0, &out);
+  assert(out == 10);
+
+  vec_get(v, 1, &out);
+  assert(out == 40);
 
   vec_free(v);
 }
 
-void test_resize_and_reserve() {
-  printf("-> Running: Logical Resize and Physical Reserve Test\n");
-  Vector *v = vec_init(4);
-  vec_append(v, 5);
-  vec_append(v, 6);
+void test_resize(void) {
+  printf("-> Running: Resize and reserve test\n");
 
-  // Test physical capacity preservation
+  Vector *v = vec_init(4, sizeof(int));
+
+  int value = 5;
+  vec_append(v, &value);
+
+  value = 6;
+  vec_append(v, &value);
+
   assert(vec_reserve(v, 10) == 0);
   assert(vec_capacity(v) == 10);
   assert(vec_size(v) == 2);
 
-  // Test layout growth with safe placeholder values
-  assert(vec_resize(v, 5, 99) == 0);
+  int fill_value = 99;
+
+  assert(vec_resize(v, 5, &fill_value) == 0);
   assert(vec_size(v) == 5);
+  assert(vec_capacity(v) == 10);
 
-  int val = 0;
-  vec_get(v, 2, &val);
-  assert(val == 99); // Verifies loops populated safe initialization values
-  vec_get(v, 3, &val);
-  assert(val == 99);
-  vec_get(v, 4, &val);
-  assert(val == 99);
+  int out;
 
-  // Test logical truncation functionality
-  assert(vec_resize(v, 1, 0) == 0);
+  vec_get(v, 2, &out);
+  assert(out == 99);
+
+  vec_get(v, 3, &out);
+  assert(out == 99);
+
+  vec_get(v, 4, &out);
+  assert(out == 99);
+
+  assert(vec_resize(v, 1, &fill_value) == 0);
   assert(vec_size(v) == 1);
-  assert(vec_capacity(v) == 10); // Physical memory overhead stays intact for
-                                 // quick recycle optimization
+  assert(vec_capacity(v) == 10);
 
   vec_free(v);
 }
 
-int main() {
+void test_clear(void) {
+  printf("-> Running: Clear test\n");
+
+  Vector *v = vec_init(4, sizeof(double));
+
+  double value = 1.5;
+  vec_append(v, &value);
+
+  value = 2.5;
+  vec_append(v, &value);
+
+  assert(vec_size(v) == 2);
+  assert(vec_is_empty(v) == 0);
+
+  vec_clear(v);
+
+  assert(vec_size(v) == 0);
+  assert(vec_is_empty(v) == 1);
+
+  assert(vec_capacity(v) == 4);
+
+  vec_free(v);
+}
+
+int main(void) {
   printf("===========================================\n");
-  printf("STARTING DYNAMIC VECTOR VALIDATION SUITE\n");
+  printf("STARTING GENERIC VECTOR TEST SUITE\n");
   printf("===========================================\n");
 
-  test_initialization_and_append();
-  test_bounds_and_safety();
-  test_insert_and_shift();
+  test_int_vector();
+  test_double_vector();
+  test_struct_vector();
+
+  test_bounds();
+  test_front_back();
+  test_insert();
   test_remove_and_pop();
-  test_resize_and_reserve();
+  test_resize();
+  test_clear();
 
   printf("===========================================\n");
-  printf("SUCCESS: All library units cleared safely!\n");
+  printf("SUCCESS: ALL TESTS PASSED!\n");
   printf("===========================================\n");
+
   return 0;
 }
