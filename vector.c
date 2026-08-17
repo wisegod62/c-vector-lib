@@ -30,17 +30,15 @@ void vec_free(Vector *vec_ptr) {
 }
 
 int vec_reserve(Vector *vec_ptr, size_t size) {
-  if (vec_ptr->size >= size) {
-    return -1;
-  } else if (vec_ptr->capacity >= size) {
+  if (vec_ptr->capacity >= size) {
     return 0;
   }
   int *real = realloc(vec_ptr->ptr, size * sizeof(int));
-  if (real != NULL) {
-    vec_ptr->ptr = real;
-  } else {
+  if (real == NULL) {
     return -1;
   }
+
+  vec_ptr->ptr = real;
   vec_ptr->capacity = size;
   return 0;
 }
@@ -59,7 +57,7 @@ int vec_insert(Vector *vec_ptr, int value, size_t index) {
   }
 
   if (vec_ptr->size >= vec_ptr->capacity) {
-    size_t new_cap = vec_ptr->capacity * 2;
+    size_t new_cap = vec_ptr->capacity == 0 ? 1 : vec_ptr->capacity * 2;
     if (vec_reserve(vec_ptr, new_cap) != 0) {
       return -1;
     }
@@ -102,7 +100,7 @@ size_t vec_capacity(Vector *vec_ptr) { return vec_ptr->capacity; }
 void vec_clear(Vector *vec_ptr) { vec_ptr->size = 0; }
 
 int vec_remove(Vector *vec_ptr, size_t index) {
-  if (index > vec_ptr->size) {
+  if (index >= vec_ptr->size) {
     return -1;
   }
   --vec_ptr->size;
