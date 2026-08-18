@@ -10,7 +10,7 @@ struct Vector {
 };
 
 Vector *vec_init(size_t size, size_t element_size) {
-  Vector *vec = malloc(sizeof(Vector));
+  Vector *vec = malloc(sizeof *vec);
   if (!vec) {
     return NULL;
   }
