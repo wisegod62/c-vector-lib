@@ -27,6 +27,10 @@ Vector *vec_init(size_t size, size_t element_size) {
 }
 
 void vec_free(Vector *vec_ptr) {
+  if (vec_ptr == NULL) {
+    return;
+  }
+
   free(vec_ptr->ptr);
   free(vec_ptr);
 }
