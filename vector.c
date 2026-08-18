@@ -29,7 +29,6 @@ Vector *vec_init(size_t size, size_t element_size) {
 void vec_free(Vector *vec_ptr) {
   free(vec_ptr->ptr);
   free(vec_ptr);
-  return;
 }
 
 int vec_reserve(Vector *vec_ptr, size_t size) {
