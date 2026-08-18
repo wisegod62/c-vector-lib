@@ -140,11 +140,7 @@ int vec_resize(Vector *vec_ptr, size_t new_size, const void *value) {
 }
 
 int vec_is_empty(const Vector *vec_ptr) {
-  if (vec_ptr->size == 0) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return vec_ptr->size == 0;
 }
 
 int vec_front(const Vector *vec_ptr, void *out_value) {
