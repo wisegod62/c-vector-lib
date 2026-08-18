@@ -36,7 +36,7 @@ int vec_reserve(Vector *vec_ptr, size_t size) {
   if (vec_ptr->capacity >= size) {
     return 0;
   }
-  unsigned char *real = realloc(vec_ptr->ptr, size * sizeof(int));
+  unsigned char *real = realloc(vec_ptr->ptr, size * vec_ptr->element_size);
   if (real == NULL) {
     return -1;
   }
