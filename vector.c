@@ -56,7 +56,7 @@ int vec_shrink_to_fit(Vector *vec_ptr) {
 }
 
 int vec_get(const Vector *vec_ptr, size_t index, void *out_value) {
-  if (index >= vec_ptr->size) {
+  if (index >= vec_ptr->size || out_value == NULL) {
     return -1;
   }
   memcpy(out_value, vec_ptr->ptr + (index * vec_ptr->element_size),
@@ -91,10 +91,11 @@ int vec_append(Vector *vec_ptr, const void *value) {
 }
 
 int vec_pop(Vector *vec_ptr, void *out_value) {
-  if (vec_ptr->size == 0) {
+  if (vec_ptr->size == 0 || out_value == NULL) {
     return -1;
   }
-  vec_get(vec_ptr, vec_ptr->size - 1, out_value);
+  memcpy(out_value, vec_ptr->ptr + (vec_ptr->size - 1) * vec_ptr->element_size,
+         vec_ptr->element_size);
   --vec_ptr->size;
   return 0;
 }
