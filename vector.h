@@ -9,6 +9,7 @@ Vector *vec_init(size_t size, size_t element_size);
 void vec_free(Vector *vec);
 
 int vec_reserve(Vector *vec, size_t capacity);
+int vec_shrink_to_fit(Vector *vec_ptr);
 
 int vec_get(const Vector *vec, size_t index, void *out_value);
 int vec_set(Vector *vec, size_t index, const void *value);

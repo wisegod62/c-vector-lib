@@ -45,6 +45,12 @@ int vec_reserve(Vector *vec_ptr, size_t size) {
   return 0;
 }
 
+int vec_shrink_to_fit(Vector *vec_ptr) {
+  vec_ptr->ptr = realloc(vec_ptr->ptr, vec_ptr->size * vec_ptr->element_size);
+  vec_ptr->capacity = vec_ptr->size;
+  return 0;
+}
+
 int vec_get(const Vector *vec_ptr, size_t index, void *out_value) {
   if (index >= vec_ptr->size) {
     return -1;
