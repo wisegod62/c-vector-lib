@@ -49,8 +49,7 @@ int vec_get(const Vector *vec_ptr, size_t index, void *out_value) {
   if (index >= vec_ptr->size) {
     return -1;
   }
-  memcpy(out_value,
-         (unsigned char *)vec_ptr->ptr + (index * vec_ptr->element_size),
+  memcpy(out_value, vec_ptr->ptr + (index * vec_ptr->element_size),
          vec_ptr->element_size);
   return 0;
 }
@@ -67,10 +66,10 @@ int vec_insert(Vector *vec_ptr, size_t index, const void *value) {
     }
   }
 
-  memmove((unsigned char *)vec_ptr->ptr + ((index + 1) * vec_ptr->element_size),
-          (unsigned char *)vec_ptr->ptr + (index * vec_ptr->element_size),
+  memmove(vec_ptr->ptr + ((index + 1) * vec_ptr->element_size),
+          vec_ptr->ptr + (index * vec_ptr->element_size),
           vec_ptr->element_size * (vec_ptr->size - index));
-  memcpy((unsigned char *)vec_ptr->ptr + (index * vec_ptr->element_size), value,
+  memcpy(vec_ptr->ptr + (index * vec_ptr->element_size), value,
          vec_ptr->element_size);
 
   ++vec_ptr->size;
@@ -94,7 +93,7 @@ int vec_set(Vector *vec_ptr, size_t index, const void *value) {
   if (index >= vec_ptr->size) {
     return -1;
   }
-  memcpy((unsigned char *)vec_ptr->ptr + (index * vec_ptr->element_size), value,
+  memcpy(vec_ptr->ptr + (index * vec_ptr->element_size), value,
          vec_ptr->element_size);
   return 0;
 }
@@ -109,8 +108,8 @@ int vec_remove(Vector *vec_ptr, size_t index) {
   if (index >= vec_ptr->size) {
     return -1;
   }
-  memmove((unsigned char *)vec_ptr->ptr + (index * vec_ptr->element_size),
-          (unsigned char *)vec_ptr->ptr + ((index + 1) * vec_ptr->element_size),
+  memmove(vec_ptr->ptr + (index * vec_ptr->element_size),
+          vec_ptr->ptr + ((index + 1) * vec_ptr->element_size),
           (vec_ptr->size - index - 1) * vec_ptr->element_size);
   --vec_ptr->size;
   return 0;
@@ -139,9 +138,7 @@ int vec_resize(Vector *vec_ptr, size_t new_size, const void *value) {
   return 0;
 }
 
-int vec_is_empty(const Vector *vec_ptr) {
-  return vec_ptr->size == 0;
-}
+int vec_is_empty(const Vector *vec_ptr) { return vec_ptr->size == 0; }
 
 int vec_front(const Vector *vec_ptr, void *out_value) {
   if (vec_ptr->size == 0 || out_value == NULL) {
