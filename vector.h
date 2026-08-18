@@ -31,4 +31,10 @@ int vec_is_empty(const Vector *vec);
 int vec_front(const Vector *vec, void *out_value);
 int vec_back(const Vector *vec, void *out_value);
 
+// The pointer returned by these functions will become invalid after successful
+// calls of vec_reserve vec_append and vec_insert will call vec_reserve when
+// they run out of space
+void *vec_data(Vector *vec);
+const void *vec_const_data(const Vector *vec);
+
 #endif

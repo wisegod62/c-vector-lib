@@ -189,3 +189,7 @@ int vec_back(const Vector *vec_ptr, void *out_value) {
 
   return 0;
 }
+
+void *vec_data(Vector *vec) { return vec->ptr; }
+
+const void *vec_const_data(const Vector *vec) { return vec->ptr; }
