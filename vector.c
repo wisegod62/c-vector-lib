@@ -1,4 +1,5 @@
 #include "vector.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,15 +11,32 @@ struct Vector {
 };
 
 Vector *vec_init(size_t size, size_t element_size) {
+  if (element_size == 0) {
+    return NULL;
+  }
   Vector *vec = malloc(sizeof *vec);
   if (!vec) {
     return NULL;
   }
-  vec->ptr = malloc(size * element_size);
-  if (!vec->ptr) {
-    free(vec);
-    return NULL;
+  vec->ptr = NULL;
+
+  if (size != 0) {
+    size_t bytes;
+
+    if (size > SIZE_MAX / element_size) {
+      free(vec);
+      return NULL;
+    }
+
+    bytes = size * element_size;
+    vec->ptr = malloc(bytes);
+
+    if (!vec->ptr) {
+      free(vec);
+      return NULL;
+    }
   }
+
   vec->element_size = element_size;
   vec->capacity = size;
   vec->size = 0;
